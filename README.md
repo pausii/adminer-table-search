@@ -49,7 +49,8 @@ It is a single PHP file with no build step and no external requests.
 | `Esc` | Close |
 
 The mouse works too: click opens the item, `Shift+click` opens the structure, and
-`Ctrl+click` or a middle click opens a new tab.
+`Ctrl+click` or a middle click opens a new tab. Every item is a real link, so a right
+click offers the browser's usual menu (open in new tab, copy link address).
 
 | Prefix | Searches |
 | --- | --- |

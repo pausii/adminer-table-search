@@ -65,7 +65,8 @@ class AdminerTableSearch extends Adminer\Plugin {
 #table-search input { box-sizing: border-box; width: 100%; padding: .6em .8em; font-size: 1.1em; border: 0; border-bottom: 1px solid #999; outline: 0; background: transparent; color: inherit; }
 #table-search ul { list-style: none; margin: 0; padding: 0; max-height: 60vh; overflow: auto; }
 #table-search li { display: flex; justify-content: space-between; align-items: center; gap: .5em; padding: .4em .8em; cursor: pointer; }
-#table-search li > span { flex: 1; min-width: 0; }
+#table-search li > a { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: .5em; color: inherit; text-decoration: none; }
+#table-search li > a > span { flex: 1; min-width: 0; }
 #table-search li small { display: block; opacity: .6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #table-search li small.rows { flex: none; min-width: 5.5em; text-align: right; font-variant-numeric: tabular-nums; }
 #table-search li em { font-style: normal; font-size: .75em; opacity: .65; margin-left: .6em; padding: 0 .35em; border: 1px solid; border-radius: 3px; vertical-align: .1em; }
@@ -267,7 +268,14 @@ class AdminerTableSearch extends Adminer\Plugin {
 		items.slice(0, 100).forEach((item, i) => {
 			const li = document.createElement('li');
 			li.setAttribute('role', 'option');
-			li.onmousedown = event => go(item, event.shiftKey, event.ctrlKey || event.metaKey || event.button == 1);
+			// a real link, so the browser offers Open in new tab on right click and opens middle clicks itself
+			const link = document.createElement('a');
+			link.href = item.url(false);
+			link.tabIndex = -1;
+			li.onclick = event => {
+				event.preventDefault();
+				go(item, event.shiftKey, event.ctrlKey || event.metaKey);
+			};
 			li.onmousemove = () => highlight(i);
 			const main = marked(item.name, item.nameWords || words);
 			for (const badge of item.badges || []) {
@@ -278,14 +286,15 @@ class AdminerTableSearch extends Adminer\Plugin {
 			if (item.detail) {
 				main.appendChild(marked(item.detail, words, 'small'));
 			}
-			li.appendChild(main);
+			link.appendChild(main);
 			if (item.rows !== undefined) {
 				const rows = document.createElement('small');
 				rows.className = 'rows';
 				rows.textContent = item.rows;
 				rows.title = text.rows;
-				li.appendChild(rows);
+				link.appendChild(rows);
 			}
+			li.appendChild(link);
 			if (item.button) {
 				const [label, title, action, on] = item.button;
 				const button = document.createElement('button');
@@ -294,9 +303,9 @@ class AdminerTableSearch extends Adminer\Plugin {
 				button.textContent = label;
 				button.title = title;
 				button.className = (on ? 'pinned' : '');
-				button.onmousedown = event => {
-					event.stopPropagation();
-					event.preventDefault(); // keep focus in the input
+				button.onmousedown = event => event.preventDefault(); // keep focus in the input
+				button.onclick = event => {
+					event.stopPropagation(); // the click would open the item
 					action();
 				};
 				li.appendChild(button);
